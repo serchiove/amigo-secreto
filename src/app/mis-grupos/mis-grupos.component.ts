@@ -33,21 +33,20 @@ export class MisGruposComponent implements OnInit {
     await this.cargarGrupos();
   }
 
-  async cargarGrupos() {
-    const { data, error } = await this.supabase.client
-      .from('grupos')
-      .select('*')
-      .eq('organizador_id', this.usuarioActual.id);
-    
-    if (error) {
-      alert('Error de lectura: ' + error.message);
-    }
-    
-    if (data) {
-      this.grupos = data;
-      this.cdr.detectChanges(); // 3. ¡Empujón a Angular para que actualice la vista!
-    }
+async cargarGrupos() {
+  const { data, error } = await this.supabase.client
+    .from('grupos')
+    .select('*')
+    .order('creado_en', { ascending: false });
+
+  if (error) {
+    alert('No se pudieron cargar los grupos: ' + error.message);
+    return;
   }
+
+  this.grupos = data ?? [];
+  this.cdr.detectChanges();
+}
 
   async cerrarSesion() {
     await this.supabase.client.auth.signOut();

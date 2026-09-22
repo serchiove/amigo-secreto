@@ -22,7 +22,22 @@ export class InicioComponent {
       alert('Error: ' + error.message);
     } else {
       // Si no hay error, viajamos a la pantalla de mis grupos
-      this.router.navigate(['/mis-grupos']);
+      let invitacion: string | null = null;
+
+try {
+  invitacion = sessionStorage.getItem('invitacionPendiente');
+} catch {
+  // Continuamos aunque el almacenamiento no esté disponible.
+}
+
+const formatoUuid =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+if (invitacion && formatoUuid.test(invitacion)) {
+  await this.router.navigate(['/unirse', invitacion]);
+} else {
+  await this.router.navigate(['/mis-grupos']);
+}
     }
   }
 

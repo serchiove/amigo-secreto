@@ -1,77 +1,292 @@
-<!-- Contenedor principal que solo se muestra si ya cargaron los datos -->
-<div *ngIf="grupo" style="max-width: 800px; margin: 40px auto; font-family: sans-serif; padding: 20px;">
-  
-  <!-- Encabezado con título, estado y botón para volver -->
-  <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 15px;">
-    <div>
-      <h2 style="margin: 0; margin-bottom: 8px;">{{ grupo.nombre }} 🎁</h2>
-      <span style="background-color: #ffc107; color: #000; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-        {{ grupo.estado }}
-      </span>
-    </div>
-    <button (click)="volver()" style="background: transparent; border: 1px solid #6c757d; color: #6c757d; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-      Volver
+<main style="max-width: 800px; margin: 32px auto; padding: 20px; font-family: sans-serif;">
+  <button
+    type="button"
+    [disabled]="sorteando()"
+    (click)="volver()"
+  >
+    Volver a mis grupos
+  </button>
+
+  @if (cargando()) {
+    <p role="status">Cargando grupo…</p>
+  } @else if (errorGeneral()) {
+    <p role="alert">{{ errorGeneral() }}</p>
+
+    <button type="button" (click)="cargarDetallesGrupo()">
+      Reintentar
     </button>
-  </header>
 
-  <!-- Tarjeta con los detalles del intercambio -->
-  <div style="margin-top: 25px; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
-    <p style="margin: 0 0 10px 0;"><strong>Descripción / Reglas:</strong> <br> {{ grupo.descripcion || 'No se especificaron reglas.' }}</p>
-    <div style="display: flex; gap: 40px; margin-top: 15px;">
-      <p style="margin: 0;"><strong>Monto referencial:</strong> <br> S/ {{ grupo.monto_minimo }}</p>
-      <p style="margin: 0;"><strong>Fecha de entrega:</strong> <br> {{ grupo.fecha_entrega || 'Por definir' }}</p>
-    </div>
-  </div>
-
-  <!-- Sección de Participantes -->
-  <h3 style="margin-top: 40px;">Participantes ({{ participantes.length }})</h3>
-  
-  <!-- Botones de acción: Solo se muestran si el grupo sigue ABIERTO -->
-  <div *ngIf="grupo.estado === 'ABIERTO'" style="display: flex; gap: 15px; margin-bottom: 20px;">
-    <button (click)="copiarEnlace()" style="padding: 10px 20px; background-color: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-      📋 Copiar enlace de invitación
+    <button type="button" (click)="irAlInicio()">
+      Ir al inicio
     </button>
-    <!-- Botón conectado a la función realizarSorteo() -->
-    <button (click)="realizarSorteo()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-      🎲 Realizar Sorteo
+  } @else if (grupo(); as actual) {
+    <h2>{{ actual.nombre }} — PRUEBA NUEVA</h2>
+
+    <button
+      type="button"
+      [disabled]="sorteando()"
+      (click)="irAMisGustos()"
+    >
+      Mis gustos
     </button>
-  </div>
 
-  <!-- Mensaje cuando el sorteo ya se realizó y revelación del Amigo Secreto -->
-  <div *ngIf="grupo.estado === 'SORTEADO'" style="margin-bottom: 30px;">
-    
-    <div style="padding: 15px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold;">
-      ¡El sorteo ya se realizó! 
-    </div>
+    <p><strong>Estado:</strong> {{ actual.estado }}</p>
+    <p>{{ actual.descripcion || 'Sin descripción.' }}</p>
 
-    <!-- Tarjeta especial que solo tú puedes ver -->
-    <div *ngIf="miAmigoSecreto" style="background-color: #fff3cd; color: #856404; border: 2px dashed #ffe8a1; padding: 25px; border-radius: 8px; text-align: center;">
-      <p style="margin: 0; font-size: 16px;">🤫 ¡Shh! Te tocó regalar a:</p>
-      <strong style="font-size: 28px; display: inline-block; margin-top: 10px;">🎁 {{ miAmigoSecreto }} 🎁</strong>
-    </div>
+    <p>
+      <strong>Mínimo del regalo:</strong>
+      S/ {{ actual.monto_minimo }}. Envío aparte.
+    </p>
 
-  </div>
+    <p>
+      <strong>Fecha de entrega:</strong>
+      {{ actual.fecha_entrega || 'Por definir' }}
+    </p>
 
-  <!-- Mensaje si no hay participantes aún -->
-  <div *ngIf="participantes.length === 0" style="padding: 30px; text-align: center; color: #666; border: 2px dashed #ccc; border-radius: 8px; background-color: #fafafa;">
-    Aún no hay participantes unidos a este grupo. Comparte el enlace de invitación.
-  </div>
+    <!-- Resultado privado -->
+    @if (actual.estado !== 'ABIERTO') {
+      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
+        <h3>Mi amigo secreto</h3>
 
-  <!-- Lista dinámica de participantes -->
-  <ul *ngIf="participantes.length > 0" style="list-style: none; padding: 0;">
-    <li *ngFor="let participante of participantes" style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: center; gap: 15px;">
-      <div style="width: 40px; height: 40px; background-color: #007bff; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px;">
-        {{ getInicial(participante) }}
-      </div>
-      <span style="font-size: 16px; font-weight: bold;">
-        {{ getNombre(participante) }}
-      </span>
-    </li>
-  </ul>
+        @if (destinatario(); as persona) {
+          <p>Te toca regalar a:</p>
+          <h3>{{ persona.apodo }}</h3>
 
-</div> <!-- Cierre del contenedor principal -->
+          <p><strong>Le gusta:</strong></p>
+          <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ persona.gustos || 'No indicó sus gustos.' }}</p>
 
-<!-- Mensaje de carga mientras esperamos a Supabase -->
-<div *ngIf="!grupo" style="text-align: center; margin-top: 100px; font-family: sans-serif; color: #666;">
-  <h2>Cargando detalles del grupo... 🎁</h2>
-</div>
+          <p><strong>Prefiere evitar:</strong></p>
+          <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ persona.evitar || 'No indicó preferencias.' }}</p>
+
+          <p>
+            <strong>Puede recibir:</strong>
+            {{ tipoRegaloTexto(persona.tipo_regalo) }}
+          </p>
+
+          <button type="button" (click)="ocultarDestinatario()">
+            Ocultar resultado
+          </button>
+        } @else {
+          <p>Consulta en privado a quién te toca regalar.</p>
+
+          <button
+            type="button"
+            [disabled]="cargandoDestinatario()"
+            (click)="verMiDestinatario()"
+          >
+            {{
+              cargandoDestinatario()
+                ? 'Consultando…'
+                : 'Ver mi amigo secreto'
+            }}
+          </button>
+        }
+
+        @if (errorDestinatario()) {
+          <p role="alert">{{ errorDestinatario() }}</p>
+        }
+      </section>
+    }
+@if (actual.estado !== 'ABIERTO') {
+  <app-cierre-intercambio
+    [grupoId]="actual.id"
+    [esOrganizador]="esOrganizador()"
+    (estadoCambiado)="actualizarEstadoGrupo($event)"
+  ></app-cierre-intercambio>
+}
+    <!-- Participantes aprobados -->
+    <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
+      <h3>Participantes aprobados</h3>
+
+      <button
+        type="button"
+        [disabled]="
+          cargandoParticipantes() ||
+          resolviendoSolicitud() !== null ||
+          sorteando()
+        "
+        (click)="cargarParticipantes()"
+      >
+        Actualizar participantes
+      </button>
+
+      @if (errorParticipantes()) {
+        <p role="alert">{{ errorParticipantes() }}</p>
+      }
+
+      @if (cargandoParticipantes()) {
+        <p role="status">Cargando participantes…</p>
+      } @else if (!errorParticipantes()) {
+        <p>Total: {{ participantes().length }}</p>
+
+        <ul>
+          @for (
+            participante of participantes();
+            track participante.participante_id
+          ) {
+            <li style="padding: 8px 0; overflow-wrap: anywhere;">
+              {{ participante.apodo }}
+
+              @if (participante.es_organizador) {
+                <strong> · Organizador</strong>
+              }
+            </li>
+          } @empty {
+            <li>No hay participantes aprobados.</li>
+          }
+        </ul>
+      }
+    </section>
+
+    @if (esOrganizador() && actual.estado === 'ABIERTO') {
+      <!-- Invitaciones -->
+      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
+        <h3>Invitar amigos</h3>
+
+        <p>
+          La nueva invitación reemplaza la anterior y dura 7 días.
+        </p>
+
+        <button
+          type="button"
+          [disabled]="generandoInvitacion() || sorteando()"
+          (click)="copiarEnlace()"
+        >
+          {{
+            generandoInvitacion()
+              ? 'Generando…'
+              : 'Generar y copiar invitación'
+          }}
+        </button>
+
+        @if (enlaceInvitacion()) {
+          <label
+            for="enlace-invitacion"
+            style="display: block; margin-top: 12px;"
+          >
+            Enlace de invitación
+          </label>
+
+          <input
+            id="enlace-invitacion"
+            type="text"
+            readonly
+            [value]="enlaceInvitacion()"
+            style="box-sizing: border-box; width: 100%; padding: 10px;"
+          >
+        }
+
+        <p role="status">{{ avisoInvitacion() }}</p>
+
+        @if (errorInvitacion()) {
+          <p role="alert">{{ errorInvitacion() }}</p>
+        }
+      </section>
+
+      <!-- Solicitudes -->
+      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
+        <h3>Solicitudes pendientes</h3>
+
+        <button
+          type="button"
+          [disabled]="
+            cargandoSolicitudes() ||
+            resolviendoSolicitud() !== null ||
+            sorteando()
+          "
+          (click)="cargarSolicitudes()"
+        >
+          Actualizar solicitudes
+        </button>
+
+        <p role="status">{{ avisoSolicitudes() }}</p>
+
+        @if (errorSolicitudes()) {
+          <p role="alert">{{ errorSolicitudes() }}</p>
+        }
+
+        @if (cargandoSolicitudes()) {
+          <p role="status">Cargando solicitudes…</p>
+        } @else {
+          @for (
+            solicitud of solicitudes();
+            track solicitud.participante_id
+          ) {
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 16px 0; border-bottom: 1px solid #aaa;">
+              <span>{{ solicitud.apodo }}</span>
+
+              <button
+                type="button"
+                [disabled]="
+                  resolviendoSolicitud() !== null ||
+                  cargandoParticipantes() ||
+                  sorteando()
+                "
+                (click)="resolverSolicitud(
+                  solicitud.participante_id,
+                  true
+                )"
+              >
+                Aprobar
+              </button>
+
+              <button
+                type="button"
+                [disabled]="
+                  resolviendoSolicitud() !== null ||
+                  cargandoParticipantes() ||
+                  sorteando()
+                "
+                (click)="resolverSolicitud(
+                  solicitud.participante_id,
+                  false
+                )"
+              >
+                Rechazar
+              </button>
+
+              @if (
+                resolviendoSolicitud() === solicitud.participante_id
+              ) {
+                <span role="status">Guardando decisión…</span>
+              }
+            </div>
+          } @empty {
+            @if (!errorSolicitudes()) {
+              <p>No hay solicitudes pendientes.</p>
+            }
+          }
+        }
+      </section>
+
+      <!-- Sorteo -->
+      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
+        <h3>Realizar sorteo</h3>
+
+        <p>
+          Debe haber al menos 3 participantes aprobados y ninguna
+          solicitud pendiente. El sorteo cerrará el grupo y no
+          se podrá repetir.
+        </p>
+
+        <button
+          type="button"
+          [disabled]="
+            sorteando() ||
+            generandoInvitacion() ||
+            resolviendoSolicitud() !== null ||
+            cargandoParticipantes() ||
+            cargandoSolicitudes()
+          "
+          (click)="realizarSorteo()"
+        >
+          {{ sorteando() ? 'Sorteando…' : 'Cerrar grupo y sortear' }}
+        </button>
+
+        @if (errorSorteo()) {
+          <p role="alert">{{ errorSorteo() }}</p>
+        }
+      </section>
+    }
+  }
+</main>

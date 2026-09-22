@@ -1,39 +1,80 @@
-<div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-  <h2>Crear Nuevo Grupo 🎁</h2>
-  <p style="color: #666; font-size: 14px;">Configura los detalles del intercambio.</p>
-  
-  <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-    
+<div style="max-width: 500px; margin: 40px auto; font-family: sans-serif; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+  <h2>Crear nuevo grupo 🎁</h2>
+  <p>Configura los detalles del intercambio.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 15px;">
     <div>
-      <label style="font-weight: bold;">Nombre del Grupo (*)</label><br>
-      <input type="text" #nombreInput placeholder="Ej. Familia Pérez" style="width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+      <label for="nombre">Nombre del grupo (*)</label>
+      <input
+        id="nombre"
+        type="text"
+        #nombreInput
+        maxlength="80"
+        placeholder="Ej. Grupo de amigos"
+        style="box-sizing: border-box; width: 100%; padding: 10px;"
+      >
     </div>
 
     <div>
-      <label style="font-weight: bold;">Descripción / Reglas</label><br>
-      <textarea #descInput placeholder="Ej. Nada de tazas o calcetines..." style="width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; min-height: 60px;"></textarea>
+      <label for="descripcion">Descripción / reglas</label>
+      <textarea
+        id="descripcion"
+        #descInput
+        maxlength="2000"
+        placeholder="Escribe las reglas del intercambio"
+        style="box-sizing: border-box; width: 100%; padding: 10px; min-height: 80px;"
+      ></textarea>
     </div>
 
     <div>
-      <label style="font-weight: bold;">Monto mínimo referencial (S/)</label><br>
-      <input type="number" #montoInput value="50" style="width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+      <label for="monto">Monto mínimo del regalo (S/)</label>
+      <input
+        id="monto"
+        type="number"
+        #montoInput
+        value="50"
+        min="0.01"
+        step="0.01"
+        style="box-sizing: border-box; width: 100%; padding: 10px;"
+      >
+      <small>El costo de envío se paga aparte.</small>
     </div>
 
     <div>
-      <label style="font-weight: bold;">Fecha de Intercambio</label><br>
-      <input type="date" #fechaInput style="width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+      <label for="fecha">Fecha de entrega (opcional)</label>
+      <input
+        id="fecha"
+        type="date"
+        #fechaInput
+        style="box-sizing: border-box; width: 100%; padding: 10px;"
+      >
     </div>
+
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
+    }
 
     <div style="display: flex; gap: 10px; margin-top: 15px;">
-      <button (click)="guardarGrupo(nombreInput.value, descInput.value, montoInput.value, fechaInput.value)" 
-              style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold;">
-        Guardar Grupo
+      <button
+        type="button"
+        [disabled]="guardando()"
+        (click)="guardarGrupo(
+          nombreInput.value,
+          descInput.value,
+          montoInput.value,
+          fechaInput.value
+        )"
+      >
+        {{ guardando() ? 'Guardando…' : 'Guardar grupo' }}
       </button>
-      <button (click)="cancelar()" 
-              style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold;">
+
+      <button
+        type="button"
+        [disabled]="guardando()"
+        (click)="cancelar()"
+      >
         Cancelar
       </button>
     </div>
-
   </div>
 </div>
