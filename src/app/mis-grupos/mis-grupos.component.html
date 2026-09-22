@@ -1,0 +1,39 @@
+<div style="max-width: 800px; margin: 40px auto; font-family: sans-serif; padding: 20px;">
+  
+  <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+    <h2>Mis Grupos 🎁</h2>
+    <button (click)="cerrarSesion()" style="background: transparent; border: none; color: #dc3545; cursor: pointer; font-weight: bold; font-size: 16px;">
+      Cerrar sesión
+    </button>
+  </header>
+
+  <div style="margin-top: 20px; display: flex; gap: 15px;">
+    <button (click)="irACrearGrupo()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+      + Crear Grupo
+    </button>
+    <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+      Unirse a un Grupo
+    </button>
+  </div>
+
+  <h3 style="margin-top: 40px;">Grupos que organizo:</h3>
+  
+  <!-- Mensaje si la lista de grupos está vacía -->
+  <div *ngIf="grupos.length === 0" style="padding: 20px; background: #f8f9fa; border-radius: 5px; text-align: center; color: #666; border: 1px dashed #ccc;">
+    Aún no has creado ningún grupo.
+  </div>
+  
+  <!-- Lista de grupos (se repetirá por cada grupo que encuentre en BD) -->
+  <ul style="list-style: none; padding: 0;">
+    <li *ngFor="let grupo of grupos" style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+      <span>
+        <strong>{{ grupo.nombre }}</strong> <br> 
+        <small style="color: #666;">Estado: {{ grupo.estado }} | Entrega: {{ grupo.fecha_entrega || 'Por definir' }}</small>
+      </span>
+      <button (click)="gestionarGrupo(grupo.id)" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer;">
+        Gestionar
+      </button>
+    </li>
+  </ul>
+
+</div>
