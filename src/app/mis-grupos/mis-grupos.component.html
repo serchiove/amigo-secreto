@@ -1,39 +1,187 @@
-<div style="max-width: 800px; margin: 40px auto; font-family: sans-serif; padding: 20px;">
-  
-  <header style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-    <h2>Mis Grupos 🎁</h2>
-    <button (click)="cerrarSesion()" style="background: transparent; border: none; color: #dc3545; cursor: pointer; font-weight: bold; font-size: 16px;">
-      Cerrar sesión
+<main style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
+  <header
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    "
+  >
+    <h2>Mis grupos 🎁</h2>
+
+    <button
+      type="button"
+      [disabled]="cerrandoSesion() || cargando()"
+      (click)="cerrarSesion()"
+    >
+      {{ cerrandoSesion() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
     </button>
   </header>
 
-  <div style="margin-top: 20px; display: flex; gap: 15px;">
-    <button (click)="irACrearGrupo()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-      + Crear Grupo
-    </button>
-    <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-      Unirse a un Grupo
-    </button>
-  </div>
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
 
-  <h3 style="margin-top: 40px;">Mis grupos:</h3>
-  
-  <!-- Mensaje si la lista de grupos está vacía -->
-  <div *ngIf="grupos.length === 0" style="padding: 20px; background: #f8f9fa; border-radius: 5px; text-align: center; color: #666; border: 1px dashed #ccc;">
-    Todavía no tienes grupos disponibles. Crea uno o solicita unirte mediante una invitación.
-  </div>
-  
-  <!-- Lista de grupos (se repetirá por cada grupo que encuentre en BD) -->
-  <ul style="list-style: none; padding: 0;">
-    <li *ngFor="let grupo of grupos" style="padding: 15px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
-      <span>
-        <strong>{{ grupo.nombre }}</strong> <br> 
-        <small style="color: #666;">Estado: {{ grupo.estado }} | Entrega: {{ grupo.fecha_entrega || 'Por definir' }}</small>
-      </span>
-      <button (click)="gestionarGrupo(grupo.id)" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer;">
-        Gestionar
+  @if (cargando()) {
+    <p role="status">Cargando tus grupos…</p>
+  } @else {
+    <div
+      style="
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      "
+    >
+      <button
+        type="button"
+        [disabled]="cerrandoSesion()"
+        (click)="irACrearGrupo()"
+      >
+        Crear grupo
       </button>
-    </li>
-  </ul>
 
-</div>
+      <button
+        type="button"
+        [disabled]="cerrandoSesion()"
+        (click)="abrirFormularioIngreso()"
+      >
+        Unirse a un grupo
+      </button>
+
+      <button
+        type="button"
+        [disabled]="cerrandoSesion()"
+        (click)="cargarGrupos()"
+      >
+        Actualizar grupos
+      </button>
+    </div>
+
+    @if (mostrarIngreso()) {
+      <section
+        style="
+          margin-top: 24px;
+          padding: 20px;
+          border: 1px solid #aaa;
+        "
+      >
+        <h3>Unirse a un grupo</h3>
+
+        <p>
+          Pega la invitación que te compartió el organizador.
+          También puedes introducir únicamente su código.
+        </p>
+
+        <form
+          (submit)="
+            $event.preventDefault();
+            abrirInvitacion(invitacionInput.value)
+          "
+        >
+          <label for="invitacion">Enlace o código de invitación</label>
+
+          <input
+            id="invitacion"
+            #invitacionInput
+            type="text"
+            required
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Pega aquí la invitación"
+            [disabled]="abriendoInvitacion() || cerrandoSesion()"
+            style="
+              box-sizing: border-box;
+              width: 100%;
+              padding: 10px;
+              margin-top: 8px;
+            "
+          >
+
+          @if (errorInvitacion()) {
+            <p role="alert">{{ errorInvitacion() }}</p>
+          }
+
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
+              margin-top: 16px;
+            "
+          >
+            <button
+              type="submit"
+              [disabled]="abriendoInvitacion() || cerrandoSesion()"
+            >
+              {{
+                abriendoInvitacion()
+                  ? 'Abriendo…'
+                  : 'Continuar con la invitación'
+              }}
+            </button>
+
+            <button
+              type="button"
+              [disabled]="abriendoInvitacion()"
+              (click)="cancelarIngreso()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <h3 style="margin-top: 32px;">Grupos disponibles</h3>
+
+    @if (grupos().length === 0 && !error()) {
+      <p>
+        Todavía no tienes grupos disponibles.
+        Crea uno o solicita unirte mediante una invitación.
+      </p>
+    }
+
+    <ul style="list-style: none; padding: 0;">
+      @for (grupo of grupos(); track grupo.id) {
+        <li
+          style="
+            padding: 16px;
+            border: 1px solid #ccc;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+          "
+        >
+          <div style="overflow-wrap: anywhere; min-width: 0;">
+            <strong>{{ grupo.nombre }}</strong>
+
+            <p>
+              Estado: {{ grupo.estado }}<br>
+              Entrega: {{ grupo.fecha_entrega || 'Por definir' }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            [disabled]="cerrandoSesion()"
+            (click)="gestionarGrupo(grupo.id)"
+          >
+            Ver grupo
+          </button>
+        </li>
+      }
+    </ul>
+
+    <p>
+      Los grupos donde solicitaste ingresar aparecerán
+      cuando el organizador te apruebe.
+    </p>
+  }
+</main>
