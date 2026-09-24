@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnInit,
-  PLATFORM_ID,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SupabaseService } from '../core/services/supabase.service';
@@ -13,39 +7,26 @@ import { SupabaseService } from '../core/services/supabase.service';
   selector: 'app-unirse-grupo',
   standalone: true,
   template: `
-    <main
-      style="
-        max-width: 500px;
-        margin: 40px auto;
-        padding: 20px;
-        font-family: sans-serif;
-      "
-    >
-      <h2>Unirse a un grupo</h2>
-
-      <p aria-live="polite">{{ mensaje() }}</p>
-
-      @if (requiereSesion()) {
-        <button type="button" (click)="irAlInicio()">
-          Iniciar sesión o registrarme
-        </button>
-      }
-
-      @if (puedeSolicitar()) {
-        <button
-          type="button"
-          [disabled]="enviando()"
-          (click)="solicitarIngreso()"
-        >
-          {{ enviando() ? 'Enviando…' : 'Solicitar unirme' }}
-        </button>
-      }
-
-      <p>
-        <button type="button" (click)="irAMisGrupos()">
-          Volver a mis grupos
-        </button>
-      </p>
+    <main class="page-shell page-shell--narrow">
+      <section class="card">
+        <div class="brand-mark" aria-hidden="true">💌</div>
+        <p class="eyebrow">Invitación</p>
+        <h1>Unirse a un grupo</h1>
+        <p class="lead" aria-live="polite">{{ mensaje() }}</p>
+        <div class="actions">
+          @if (requiereSesion()) {
+            <button type="button" (click)="irAlInicio()">Iniciar sesión o registrarme</button>
+          }
+          @if (puedeSolicitar()) {
+            <button type="button" [disabled]="enviando()" (click)="solicitarIngreso()">
+              {{ enviando() ? 'Enviando…' : 'Solicitar unirme' }}
+            </button>
+          }
+          <button class="btn-secondary" type="button" (click)="irAMisGrupos()">
+            Volver a mis grupos
+          </button>
+        </div>
+      </section>
     </main>
   `,
 })
@@ -69,8 +50,7 @@ export class UnirseGrupoComponent implements OnInit {
     // Ahora ese parámetro contiene el token de invitación.
     this.token = this.route.snapshot.paramMap.get('id') ?? '';
 
-    const formatoUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const formatoUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     if (!formatoUuid.test(this.token)) {
       this.mensaje.set('El enlace de invitación no tiene un formato válido.');
@@ -78,8 +58,7 @@ export class UnirseGrupoComponent implements OnInit {
     }
 
     try {
-      const { data, error } =
-        await this.supabase.client.auth.getUser();
+      const { data, error } = await this.supabase.client.auth.getUser();
 
       if (error || !data.user) {
         // Guardamos solo el token, nunca una dirección de redirección.
@@ -114,10 +93,9 @@ export class UnirseGrupoComponent implements OnInit {
     this.enviando.set(true);
 
     try {
-      const { data: estado, error } =
-        await this.supabase.client.rpc('solicitar_ingreso', {
-          p_token: this.token,
-        });
+      const { data: estado, error } = await this.supabase.client.rpc('solicitar_ingreso', {
+        p_token: this.token,
+      });
 
       if (error) {
         this.mensaje.set(error.message);
@@ -125,9 +103,7 @@ export class UnirseGrupoComponent implements OnInit {
       }
 
       if (estado !== 'PENDIENTE' && estado !== 'APROBADO') {
-        this.mensaje.set(
-          'No recibimos una confirmación válida. Puedes volver a intentarlo.',
-        );
+        this.mensaje.set('No recibimos una confirmación válida. Puedes volver a intentarlo.');
         return;
       }
 
@@ -145,9 +121,7 @@ export class UnirseGrupoComponent implements OnInit {
           : 'Tu solicitud está pendiente de aprobación del organizador.',
       );
     } catch {
-      this.mensaje.set(
-        'No pudimos confirmar la solicitud. Puedes reintentar: no se duplicará.',
-      );
+      this.mensaje.set('No pudimos confirmar la solicitud. Puedes reintentar: no se duplicará.');
     } finally {
       this.enviando.set(false);
     }

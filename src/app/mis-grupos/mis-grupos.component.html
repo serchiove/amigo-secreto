@@ -1,187 +1,121 @@
-<main style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
-  <header
-    style="
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 10px;
-    "
-  >
-    <h2>Mis grupos 🎁</h2>
-
-    <button
-      type="button"
-      [disabled]="cerrandoSesion() || cargando()"
-      (click)="cerrarSesion()"
-    >
-      {{ cerrandoSesion() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
-    </button>
-  </header>
-
-  @if (error()) {
-    <p role="alert">{{ error() }}</p>
-  }
-
-  @if (cargando()) {
-    <p role="status">Cargando tus grupos…</p>
-  } @else {
-    <div
-      style="
-        margin-top: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-      "
-    >
+<main class="page-shell">
+  <section class="card">
+    <header class="page-header">
+      <div>
+        <div class="brand-mark" aria-hidden="true">🎁</div>
+        <p class="eyebrow">Tu espacio</p>
+        <h1>Mis grupos 🎁</h1>
+      </div>
       <button
+        class="btn-danger"
         type="button"
-        [disabled]="cerrandoSesion()"
-        (click)="irACrearGrupo()"
+        [disabled]="cerrandoSesion() || cargando()"
+        (click)="cerrarSesion()"
       >
-        Crear grupo
+        {{ cerrandoSesion() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
       </button>
+    </header>
 
-      <button
-        type="button"
-        [disabled]="cerrandoSesion()"
-        (click)="abrirFormularioIngreso()"
-      >
-        Unirse a un grupo
-      </button>
-
-      <button
-        type="button"
-        [disabled]="cerrandoSesion()"
-        (click)="cargarGrupos()"
-      >
-        Actualizar grupos
-      </button>
-    </div>
-
-    @if (mostrarIngreso()) {
-      <section
-        style="
-          margin-top: 24px;
-          padding: 20px;
-          border: 1px solid #aaa;
-        "
-      >
-        <h3>Unirse a un grupo</h3>
-
-        <p>
-          Pega la invitación que te compartió el organizador.
-          También puedes introducir únicamente su código.
-        </p>
-
-        <form
-          (submit)="
-            $event.preventDefault();
-            abrirInvitacion(invitacionInput.value)
-          "
-        >
-          <label for="invitacion">Enlace o código de invitación</label>
-
-          <input
-            id="invitacion"
-            #invitacionInput
-            type="text"
-            required
-            autocomplete="off"
-            spellcheck="false"
-            placeholder="Pega aquí la invitación"
-            [disabled]="abriendoInvitacion() || cerrandoSesion()"
-            style="
-              box-sizing: border-box;
-              width: 100%;
-              padding: 10px;
-              margin-top: 8px;
-            "
-          >
-
-          @if (errorInvitacion()) {
-            <p role="alert">{{ errorInvitacion() }}</p>
-          }
-
-          <div
-            style="
-              display: flex;
-              flex-wrap: wrap;
-              gap: 10px;
-              margin-top: 16px;
-            "
-          >
-            <button
-              type="submit"
-              [disabled]="abriendoInvitacion() || cerrandoSesion()"
-            >
-              {{
-                abriendoInvitacion()
-                  ? 'Abriendo…'
-                  : 'Continuar con la invitación'
-              }}
-            </button>
-
-            <button
-              type="button"
-              [disabled]="abriendoInvitacion()"
-              (click)="cancelarIngreso()"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </section>
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
     }
 
-    <h3 style="margin-top: 32px;">Grupos disponibles</h3>
+    @if (cargando()) {
+      <p class="empty-state" role="status">Cargando tus grupos…</p>
+    } @else {
+      <div class="actions">
+        <button type="button" [disabled]="cerrandoSesion()" (click)="irACrearGrupo()">
+          Crear grupo
+        </button>
+        <button
+          class="btn-secondary"
+          type="button"
+          [disabled]="cerrandoSesion()"
+          (click)="abrirFormularioIngreso()"
+        >
+          Unirme con invitación
+        </button>
+        <button
+          class="btn-quiet"
+          type="button"
+          [disabled]="cerrandoSesion()"
+          (click)="cargarGrupos()"
+        >
+          Actualizar
+        </button>
+      </div>
 
-    @if (grupos().length === 0 && !error()) {
-      <p>
-        Todavía no tienes grupos disponibles.
-        Crea uno o solicita unirte mediante una invitación.
+      @if (mostrarIngreso()) {
+        <section class="section-card">
+          <h2>Unirse a un grupo</h2>
+          <p class="muted">
+            Pega el enlace que te compartió el organizador o introduce solamente su código.
+          </p>
+          <form
+            class="form-stack"
+            (submit)="$event.preventDefault(); abrirInvitacion(invitacionInput.value)"
+          >
+            <div class="field">
+              <label for="invitacion">Enlace o código de invitación</label>
+              <input
+                id="invitacion"
+                #invitacionInput
+                type="text"
+                required
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Pega aquí la invitación"
+                [disabled]="abriendoInvitacion() || cerrandoSesion()"
+              />
+            </div>
+            @if (errorInvitacion()) {
+              <p class="alert" role="alert">{{ errorInvitacion() }}</p>
+            }
+            <div class="actions">
+              <button type="submit" [disabled]="abriendoInvitacion() || cerrandoSesion()">
+                {{ abriendoInvitacion() ? 'Abriendo…' : 'Continuar' }}
+              </button>
+              <button
+                class="btn-secondary"
+                type="button"
+                [disabled]="abriendoInvitacion()"
+                (click)="cancelarIngreso()"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <h2 class="divider-title">Grupos disponibles</h2>
+      @if (grupos().length === 0 && !error()) {
+        <p class="empty-state">
+          Todavía no tienes grupos. Crea uno o solicita unirte mediante una invitación.
+        </p>
+      }
+
+      <ul class="group-list">
+        @for (grupo of grupos(); track grupo.id) {
+          <li class="group-card">
+            <span class="pixel-avatar pixel-avatar--gift" aria-hidden="true">🎁</span>
+            <div class="group-card__content">
+              <h3>{{ grupo.nombre }}</h3>
+              <p>
+                <span class="status-pill">{{ grupo.estado }}</span>
+              </p>
+              <p>Entrega: {{ grupo.fecha_entrega || 'Por definir' }}</p>
+            </div>
+            <button type="button" [disabled]="cerrandoSesion()" (click)="gestionarGrupo(grupo.id)">
+              Ver grupo
+            </button>
+          </li>
+        }
+      </ul>
+
+      <p class="muted">
+        Los grupos donde solicitaste ingresar aparecerán cuando el organizador te apruebe.
       </p>
     }
-
-    <ul style="list-style: none; padding: 0;">
-      @for (grupo of grupos(); track grupo.id) {
-        <li
-          style="
-            padding: 16px;
-            border: 1px solid #ccc;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-          "
-        >
-          <div style="overflow-wrap: anywhere; min-width: 0;">
-            <strong>{{ grupo.nombre }}</strong>
-
-            <p>
-              Estado: {{ grupo.estado }}<br>
-              Entrega: {{ grupo.fecha_entrega || 'Por definir' }}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            [disabled]="cerrandoSesion()"
-            (click)="gestionarGrupo(grupo.id)"
-          >
-            Ver grupo
-          </button>
-        </li>
-      }
-    </ul>
-
-    <p>
-      Los grupos donde solicitaste ingresar aparecerán
-      cuando el organizador te apruebe.
-    </p>
-  }
+  </section>
 </main>

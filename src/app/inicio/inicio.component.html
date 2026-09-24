@@ -1,112 +1,108 @@
-<main
-  style="
-    max-width: 420px;
-    margin: 60px auto;
-    padding: 20px;
-    font-family: sans-serif;
-  "
->
-  <h1>Amigo Secreto 🎁</h1>
-  <p>Organiza tu intercambio de regalos.</p>
+<main class="quest-world" [class.quest-world--form]="mostrarFormulario()">
+  <header class="quest-hud">
+    <span>★ EDICIÓN AMIGOS</span>
+    <span>UN REGALO · UNA MISIÓN</span>
+  </header>
+  <div class="quest-content">
+    <div class="quest-logo">
+      <p>LA AVENTURA DE REGALAR</p>
+      <h1>AMIGO<br><span>SECRETO</span></h1>
+      <span class="quest-logo__ribbon">★ GIFT QUEST ★</span>
+    </div>
+    @if (!mostrarFormulario()) {
+      <section class="quest-menu" aria-label="Menú principal">
+        <p class="quest-tagline">Tu pandilla. Un sorteo. Una gran sorpresa.</p>
+        <button type="button" (click)="abrirAcceso(false)">[ INICIAR AVENTURA ]</button>
+        <button type="button" (click)="abrirAcceso(true)">[ NUEVO JUGADOR ]</button>
+        <button class="quest-menu__recovery" type="button" (click)="irARecuperarClave()">Recuperar mi acceso</button>
+      </section>
+    } @else {
+  <section class="quest-form">
+    <button class="quest-back" type="button" [disabled]="procesando()" (click)="mostrarFormulario.set(false)">← VOLVER AL MENÚ</button>
+    <h2>{{ modoRegistro() ? 'NUEVO JUGADOR' : 'ENTRA A LA AVENTURA' }}</h2>
 
-  <h2>{{ modoRegistro() ? 'Crear cuenta' : 'Iniciar sesión' }}</h2>
-
-  <form (ngSubmit)="enviarFormulario()">
-    <fieldset
-      [disabled]="procesando()"
-      style="border: 0; padding: 0; margin: 0; min-width: 0;"
-    >
-      @if (modoRegistro()) {
-        <div style="margin-bottom: 16px;">
-          <label for="apodo">Tu apodo</label>
-
-          <input
-            id="apodo"
-            name="apodo"
-            type="text"
-            [(ngModel)]="apodo"
-            required
-            maxlength="40"
-            autocomplete="nickname"
-            placeholder="Así te verán tus amigos"
-            style="box-sizing: border-box; width: 100%; padding: 10px;"
-          >
-        </div>
-      }
-
-      <div style="margin-bottom: 16px;">
-        <label for="email">Correo electrónico</label>
-
-        <input
-          id="email"
-          name="email"
-          type="email"
-          [(ngModel)]="email"
-          required
-          autocomplete="email"
-          style="box-sizing: border-box; width: 100%; padding: 10px;"
-        >
-      </div>
-
-      <div style="margin-bottom: 16px;">
-        <label for="password">Contraseña</label>
-
-        <input
-          id="password"
-          name="password"
-          type="password"
-          [(ngModel)]="password"
-          required
-          [attr.autocomplete]="
-            modoRegistro() ? 'new-password' : 'current-password'
-          "
-          style="box-sizing: border-box; width: 100%; padding: 10px;"
-        >
-
+    <form class="form-stack" (ngSubmit)="enviarFormulario()">
+      <fieldset [disabled]="procesando()">
         @if (modoRegistro()) {
-          <small>Usa al menos 8 caracteres.</small>
+          <div class="field">
+            <label for="apodo">🎮 Nombre del jugador</label>
+            <input
+              id="apodo"
+              name="apodo"
+              type="text"
+              [(ngModel)]="apodo"
+              required
+              maxlength="40"
+              autocomplete="nickname"
+              placeholder="Así te verán tus amigos"
+            />
+          </div>
         }
-      </div>
+        <div class="field">
+          <label for="email">▣ Correo del jugador</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="email"
+            required
+            autocomplete="email"
+            placeholder="tu@correo.com"
+          />
+        </div>
+        <div class="field">
+          <label for="password">🔑 Secret key (contraseña)</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            [(ngModel)]="password"
+            required
+            [attr.autocomplete]="modoRegistro() ? 'new-password' : 'current-password'"
+            placeholder="Mínimo 8 caracteres"
+          />
+          @if (modoRegistro()) {
+            <small>Usa al menos 8 caracteres.</small>
+          }
+        </div>
+        <button type="submit" [disabled]="procesando()">
+          {{
+            procesando()
+              ? 'CARGANDO…'
+              : modoRegistro()
+                ? '¡CREAR JUGADOR!'
+                : '¡ENTRAR A LA PARTIDA!'
+          }}
+        </button>
+        <button
+          class="btn-secondary"
+          type="button"
+          [disabled]="procesando()"
+          (click)="cambiarModo()"
+        >
+          {{ modoRegistro() ? 'YA TENGO JUGADOR' : 'NUEVO JUGADOR' }}
+        </button>
+      </fieldset>
+      @if (!modoRegistro()) {
+        <button
+          class="btn-quiet"
+          type="button"
+          [disabled]="procesando()"
+          (click)="irARecuperarClave()"
+        >
+          Olvidé mi contraseña
+        </button>
+      }
+    </form>
 
-      <button type="submit" [disabled]="procesando()">
-        {{
-          procesando()
-            ? 'Procesando…'
-            : modoRegistro()
-              ? 'Crear cuenta'
-              : 'Ingresar'
-        }}
-      </button>
-
-      <button
-        type="button"
-        [disabled]="procesando()"
-        (click)="cambiarModo()"
-        style="margin-top: 12px;"
-      >
-        {{
-          modoRegistro()
-            ? 'Ya tengo cuenta'
-            : 'Quiero registrarme'
-        }}
-      </button>
-    </fieldset>
-    @if (!modoRegistro()) {
-  <p>
-    <button
-      type="button"
-      [disabled]="procesando()"
-      (click)="irARecuperarClave()"
-    >
-      Olvidé mi contraseña
-    </button>
-  </p>
-}
-  </form>
-
-  @if (error()) {
-    <p role="alert">{{ error() }}</p>
-  }
-
-  <p role="status">{{ mensaje() }}</p>
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    }
+    @if (mensaje()) {
+      <p class="notice" role="status">{{ mensaje() }}</p>
+    }
+  </section>
+    }
+  </div>
+  <footer class="quest-footer">HECHO PARA COMPARTIR · QUE EMPIECE LA SORPRESA</footer>
 </main>

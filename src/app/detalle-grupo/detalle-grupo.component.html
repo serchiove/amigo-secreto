@@ -1,292 +1,278 @@
-<main style="max-width: 800px; margin: 32px auto; padding: 20px; font-family: sans-serif;">
-  <button
-    type="button"
-    [disabled]="sorteando()"
-    (click)="volver()"
-  >
-    Volver a mis grupos
-  </button>
-
-  @if (cargando()) {
-    <p role="status">Cargando grupo…</p>
-  } @else if (errorGeneral()) {
-    <p role="alert">{{ errorGeneral() }}</p>
-
-    <button type="button" (click)="cargarDetallesGrupo()">
-      Reintentar
+<main class="page-shell">
+  <section class="card">
+    <button class="btn-secondary" type="button" [disabled]="sorteando()" (click)="volver()">
+      Volver a mis grupos
     </button>
 
-    <button type="button" (click)="irAlInicio()">
-      Ir al inicio
-    </button>
-  } @else if (grupo(); as actual) {
-    <h2>{{ actual.nombre }} — PRUEBA NUEVA</h2>
+    @if (cargando()) {
+      <p class="empty-state divider-title" role="status">Cargando grupo…</p>
+    } @else if (errorGeneral()) {
+      <p class="alert divider-title" role="alert">{{ errorGeneral() }}</p>
+      <div class="actions">
+        <button type="button" (click)="cargarDetallesGrupo()">Reintentar</button>
+        <button class="btn-secondary" type="button" (click)="irAlInicio()">Ir al inicio</button>
+      </div>
+    } @else if (grupo(); as actual) {
+      <header class="page-header divider-title">
+        <div>
+          <p class="eyebrow">Detalle del intercambio</p>
+          <h1>{{ actual.nombre }}</h1>
+        </div>
+        <button type="button" [disabled]="sorteando()" (click)="irAMisGustos()">Mis gustos</button>
+      </header>
 
-    <button
-      type="button"
-      [disabled]="sorteando()"
-      (click)="irAMisGustos()"
-    >
-      Mis gustos
-    </button>
+      <p>
+        <span class="status-pill">{{ actual.estado }}</span>
+      </p>
+      <p class="lead">{{ actual.descripcion || 'Este grupo no tiene descripción.' }}</p>
 
-    <p><strong>Estado:</strong> {{ actual.estado }}</p>
-    <p>{{ actual.descripcion || 'Sin descripción.' }}</p>
+      <div class="info-grid">
+        <div class="info-item">
+          <span>Mínimo del regalo</span>
+          <strong>S/ {{ actual.monto_minimo }}</strong>
+          <small>Envío aparte</small>
+        </div>
+        <div class="info-item">
+          <span>Fecha de entrega</span>
+          <strong>{{ actual.fecha_entrega || 'Por definir' }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Participantes</span>
+          <strong>{{ participantes().length }}</strong>
+          <small>Aprobados</small>
+        </div>
+      </div>
 
-    <p>
-      <strong>Mínimo del regalo:</strong>
-      S/ {{ actual.monto_minimo }}. Envío aparte.
-    </p>
+      <!-- Resultado privado -->
+      @if (actual.estado !== 'ABIERTO') {
+        <section class="section-card">
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">🤫</span>
+            <div>
+              <p class="eyebrow">Resultado privado</p>
+              <h2>Mi amigo secreto</h2>
+            </div>
+          </div>
 
-    <p>
-      <strong>Fecha de entrega:</strong>
-      {{ actual.fecha_entrega || 'Por definir' }}
-    </p>
+          @if (destinatario(); as persona) {
+            <p>Te toca regalar a:</p>
+            <h3 class="recipient-name">{{ persona.apodo }}</h3>
 
-    <!-- Resultado privado -->
-    @if (actual.estado !== 'ABIERTO') {
-      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
-        <h3>Mi amigo secreto</h3>
+            <p><strong>Le gusta:</strong></p>
+            <p class="pre-wrap">{{ persona.gustos || 'No indicó sus gustos.' }}</p>
 
-        @if (destinatario(); as persona) {
-          <p>Te toca regalar a:</p>
-          <h3>{{ persona.apodo }}</h3>
+            <p><strong>Prefiere evitar:</strong></p>
+            <p class="pre-wrap">{{ persona.evitar || 'No indicó preferencias.' }}</p>
 
-          <p><strong>Le gusta:</strong></p>
-          <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ persona.gustos || 'No indicó sus gustos.' }}</p>
+            <p>
+              <strong>Puede recibir:</strong>
+              {{ tipoRegaloTexto(persona.tipo_regalo) }}
+            </p>
 
-          <p><strong>Prefiere evitar:</strong></p>
-          <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ persona.evitar || 'No indicó preferencias.' }}</p>
+            <button class="btn-secondary" type="button" (click)="ocultarDestinatario()">
+              Ocultar resultado
+            </button>
+          } @else {
+            <p>Consulta en privado a quién te toca regalar.</p>
 
-          <p>
-            <strong>Puede recibir:</strong>
-            {{ tipoRegaloTexto(persona.tipo_regalo) }}
-          </p>
+            <button type="button" [disabled]="cargandoDestinatario()" (click)="verMiDestinatario()">
+              {{ cargandoDestinatario() ? 'Consultando…' : 'Ver mi amigo secreto' }}
+            </button>
+          }
 
-          <button type="button" (click)="ocultarDestinatario()">
-            Ocultar resultado
-          </button>
-        } @else {
-          <p>Consulta en privado a quién te toca regalar.</p>
+          @if (errorDestinatario()) {
+            <p class="alert" role="alert">{{ errorDestinatario() }}</p>
+          }
+        </section>
+      }
+      @if (actual.estado !== 'ABIERTO') {
+        <app-cierre-intercambio
+          [grupoId]="actual.id"
+          [esOrganizador]="esOrganizador()"
+          (estadoCambiado)="actualizarEstadoGrupo($event)"
+        ></app-cierre-intercambio>
+      }
+      <!-- Participantes aprobados -->
+      <section class="section-card">
+        <div class="section-heading">
+          <span class="section-icon" aria-hidden="true">👥</span>
+          <div>
+            <p class="eyebrow">Comunidad</p>
+            <h2>Participantes aprobados</h2>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          [disabled]="cargandoParticipantes() || resolviendoSolicitud() !== null || sorteando()"
+          (click)="cargarParticipantes()"
+        >
+          Actualizar participantes
+        </button>
+
+        @if (errorParticipantes()) {
+          <p class="alert" role="alert">{{ errorParticipantes() }}</p>
+        }
+
+        @if (cargandoParticipantes()) {
+          <p class="empty-state" role="status">Cargando participantes…</p>
+        } @else if (!errorParticipantes()) {
+          <p>Total: {{ participantes().length }}</p>
+
+          <ul class="participant-list">
+            @for (participante of participantes(); track participante.participante_id) {
+              <li class="pre-wrap">
+                <span class="pixel-avatar" aria-hidden="true">
+                  {{ participante.apodo.charAt(0).toUpperCase() }}
+                </span>
+                {{ participante.apodo }}
+
+                @if (participante.es_organizador) {
+                  <strong> · Organizador</strong>
+                }
+              </li>
+            } @empty {
+              <li>No hay participantes aprobados.</li>
+            }
+          </ul>
+        }
+      </section>
+
+      @if (esOrganizador() && actual.estado === 'ABIERTO') {
+        <!-- Invitaciones -->
+        <section class="section-card">
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">💌</span>
+            <div>
+              <p class="eyebrow">Comparte el grupo</p>
+              <h2>Invitar amigos</h2>
+            </div>
+          </div>
+
+          <p>La nueva invitación reemplaza la anterior y dura 7 días.</p>
 
           <button
             type="button"
-            [disabled]="cargandoDestinatario()"
-            (click)="verMiDestinatario()"
+            [disabled]="generandoInvitacion() || sorteando()"
+            (click)="copiarEnlace()"
           >
-            {{
-              cargandoDestinatario()
-                ? 'Consultando…'
-                : 'Ver mi amigo secreto'
-            }}
+            {{ generandoInvitacion() ? 'Generando…' : 'Generar y copiar invitación' }}
           </button>
-        }
 
-        @if (errorDestinatario()) {
-          <p role="alert">{{ errorDestinatario() }}</p>
-        }
-      </section>
-    }
-@if (actual.estado !== 'ABIERTO') {
-  <app-cierre-intercambio
-    [grupoId]="actual.id"
-    [esOrganizador]="esOrganizador()"
-    (estadoCambiado)="actualizarEstadoGrupo($event)"
-  ></app-cierre-intercambio>
-}
-    <!-- Participantes aprobados -->
-    <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
-      <h3>Participantes aprobados</h3>
+          @if (enlaceInvitacion()) {
+            <label for="enlace-invitacion" class="divider-title"> Enlace de invitación </label>
 
-      <button
-        type="button"
-        [disabled]="
-          cargandoParticipantes() ||
-          resolviendoSolicitud() !== null ||
-          sorteando()
-        "
-        (click)="cargarParticipantes()"
-      >
-        Actualizar participantes
-      </button>
-
-      @if (errorParticipantes()) {
-        <p role="alert">{{ errorParticipantes() }}</p>
-      }
-
-      @if (cargandoParticipantes()) {
-        <p role="status">Cargando participantes…</p>
-      } @else if (!errorParticipantes()) {
-        <p>Total: {{ participantes().length }}</p>
-
-        <ul>
-          @for (
-            participante of participantes();
-            track participante.participante_id
-          ) {
-            <li style="padding: 8px 0; overflow-wrap: anywhere;">
-              {{ participante.apodo }}
-
-              @if (participante.es_organizador) {
-                <strong> · Organizador</strong>
-              }
-            </li>
-          } @empty {
-            <li>No hay participantes aprobados.</li>
+            <input id="enlace-invitacion" type="text" readonly [value]="enlaceInvitacion()" />
           }
-        </ul>
-      }
-    </section>
 
-    @if (esOrganizador() && actual.estado === 'ABIERTO') {
-      <!-- Invitaciones -->
-      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
-        <h3>Invitar amigos</h3>
+          <p role="status">{{ avisoInvitacion() }}</p>
 
-        <p>
-          La nueva invitación reemplaza la anterior y dura 7 días.
-        </p>
+          @if (errorInvitacion()) {
+            <p class="alert" role="alert">{{ errorInvitacion() }}</p>
+          }
+        </section>
 
-        <button
-          type="button"
-          [disabled]="generandoInvitacion() || sorteando()"
-          (click)="copiarEnlace()"
-        >
-          {{
-            generandoInvitacion()
-              ? 'Generando…'
-              : 'Generar y copiar invitación'
-          }}
-        </button>
-
-        @if (enlaceInvitacion()) {
-          <label
-            for="enlace-invitacion"
-            style="display: block; margin-top: 12px;"
-          >
-            Enlace de invitación
-          </label>
-
-          <input
-            id="enlace-invitacion"
-            type="text"
-            readonly
-            [value]="enlaceInvitacion()"
-            style="box-sizing: border-box; width: 100%; padding: 10px;"
-          >
-        }
-
-        <p role="status">{{ avisoInvitacion() }}</p>
-
-        @if (errorInvitacion()) {
-          <p role="alert">{{ errorInvitacion() }}</p>
-        }
-      </section>
-
-      <!-- Solicitudes -->
-      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
-        <h3>Solicitudes pendientes</h3>
-
-        <button
-          type="button"
-          [disabled]="
-            cargandoSolicitudes() ||
-            resolviendoSolicitud() !== null ||
-            sorteando()
-          "
-          (click)="cargarSolicitudes()"
-        >
-          Actualizar solicitudes
-        </button>
-
-        <p role="status">{{ avisoSolicitudes() }}</p>
-
-        @if (errorSolicitudes()) {
-          <p role="alert">{{ errorSolicitudes() }}</p>
-        }
-
-        @if (cargandoSolicitudes()) {
-          <p role="status">Cargando solicitudes…</p>
-        } @else {
-          @for (
-            solicitud of solicitudes();
-            track solicitud.participante_id
-          ) {
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 16px 0; border-bottom: 1px solid #aaa;">
-              <span>{{ solicitud.apodo }}</span>
-
-              <button
-                type="button"
-                [disabled]="
-                  resolviendoSolicitud() !== null ||
-                  cargandoParticipantes() ||
-                  sorteando()
-                "
-                (click)="resolverSolicitud(
-                  solicitud.participante_id,
-                  true
-                )"
-              >
-                Aprobar
-              </button>
-
-              <button
-                type="button"
-                [disabled]="
-                  resolviendoSolicitud() !== null ||
-                  cargandoParticipantes() ||
-                  sorteando()
-                "
-                (click)="resolverSolicitud(
-                  solicitud.participante_id,
-                  false
-                )"
-              >
-                Rechazar
-              </button>
-
-              @if (
-                resolviendoSolicitud() === solicitud.participante_id
-              ) {
-                <span role="status">Guardando decisión…</span>
-              }
+        <!-- Solicitudes -->
+        <section class="section-card">
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">🙋</span>
+            <div>
+              <p class="eyebrow">Acceso al grupo</p>
+              <h2>Solicitudes pendientes</h2>
             </div>
-          } @empty {
-            @if (!errorSolicitudes()) {
-              <p>No hay solicitudes pendientes.</p>
+          </div>
+
+          <button
+            type="button"
+            [disabled]="cargandoSolicitudes() || resolviendoSolicitud() !== null || sorteando()"
+            (click)="cargarSolicitudes()"
+          >
+            Actualizar solicitudes
+          </button>
+
+          <p role="status">{{ avisoSolicitudes() }}</p>
+
+          @if (errorSolicitudes()) {
+            <p class="alert" role="alert">{{ errorSolicitudes() }}</p>
+          }
+
+          @if (cargandoSolicitudes()) {
+            <p class="empty-state" role="status">Cargando solicitudes…</p>
+          } @else {
+            @for (solicitud of solicitudes(); track solicitud.participante_id) {
+              <div class="request-row">
+                <span class="pixel-avatar" aria-hidden="true">
+                  {{ solicitud.apodo.charAt(0).toUpperCase() }}
+                </span>
+                <strong>{{ solicitud.apodo }}</strong>
+
+                <button
+                  class="btn-secondary"
+                  type="button"
+                  [disabled]="
+                    resolviendoSolicitud() !== null || cargandoParticipantes() || sorteando()
+                  "
+                  (click)="resolverSolicitud(solicitud.participante_id, true)"
+                >
+                  Aprobar
+                </button>
+
+                <button
+                  type="button"
+                  [disabled]="
+                    resolviendoSolicitud() !== null || cargandoParticipantes() || sorteando()
+                  "
+                  (click)="resolverSolicitud(solicitud.participante_id, false)"
+                >
+                  Rechazar
+                </button>
+
+                @if (resolviendoSolicitud() === solicitud.participante_id) {
+                  <span role="status">Guardando decisión…</span>
+                }
+              </div>
+            } @empty {
+              @if (!errorSolicitudes()) {
+                <p>No hay solicitudes pendientes.</p>
+              }
             }
           }
-        }
-      </section>
+        </section>
 
-      <!-- Sorteo -->
-      <section style="margin-top: 24px; padding: 16px; border: 1px solid #aaa;">
-        <h3>Realizar sorteo</h3>
+        <!-- Sorteo -->
+        <section class="section-card">
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">🎲</span>
+            <div>
+              <p class="eyebrow">Momento decisivo</p>
+              <h2>Realizar sorteo</h2>
+            </div>
+          </div>
 
-        <p>
-          Debe haber al menos 3 participantes aprobados y ninguna
-          solicitud pendiente. El sorteo cerrará el grupo y no
-          se podrá repetir.
-        </p>
+          <p>
+            Debe haber al menos 3 participantes aprobados y ninguna solicitud pendiente. El sorteo
+            cerrará el grupo y no se podrá repetir.
+          </p>
 
-        <button
-          type="button"
-          [disabled]="
-            sorteando() ||
-            generandoInvitacion() ||
-            resolviendoSolicitud() !== null ||
-            cargandoParticipantes() ||
-            cargandoSolicitudes()
-          "
-          (click)="realizarSorteo()"
-        >
-          {{ sorteando() ? 'Sorteando…' : 'Cerrar grupo y sortear' }}
-        </button>
+          <button
+            type="button"
+            [disabled]="
+              sorteando() ||
+              generandoInvitacion() ||
+              resolviendoSolicitud() !== null ||
+              cargandoParticipantes() ||
+              cargandoSolicitudes()
+            "
+            (click)="realizarSorteo()"
+          >
+            {{ sorteando() ? 'Sorteando…' : 'Cerrar grupo y sortear' }}
+          </button>
 
-        @if (errorSorteo()) {
-          <p role="alert">{{ errorSorteo() }}</p>
-        }
-      </section>
+          @if (errorSorteo()) {
+            <p class="alert" role="alert">{{ errorSorteo() }}</p>
+          }
+        </section>
+      }
     }
-  }
+  </section>
 </main>

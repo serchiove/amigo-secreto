@@ -8,67 +8,42 @@ import { SupabaseService } from '../core/services/supabase.service';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <main
-      style="
-        max-width: 420px;
-        margin: 60px auto;
-        padding: 20px;
-        font-family: sans-serif;
-      "
-    >
-      <h2>Recuperar contraseña</h2>
+    <main class="page-shell page-shell--narrow">
+      <section class="card">
+        <div class="brand-mark" aria-hidden="true">✉️</div>
+        <p class="eyebrow">Recuperación de acceso</p>
+        <h1>Recupera tu contraseña</h1>
+        <p class="lead">Te enviaremos un enlace seguro para que elijas una contraseña nueva.</p>
 
-      <p>
-        Introduce el correo de tu cuenta para solicitar
-        un enlace de recuperación.
-      </p>
+        <form class="form-stack" (ngSubmit)="enviar()">
+          <div class="field">
+            <label for="correo-recuperacion">Correo electrónico</label>
+            <input
+              id="correo-recuperacion"
+              name="email"
+              type="email"
+              [(ngModel)]="email"
+              required
+              autocomplete="email"
+              [disabled]="enviando() || enviado()"
+              placeholder="tu@correo.com"
+            />
+          </div>
+          <button type="submit" [disabled]="enviando() || enviado()">
+            {{ enviando() ? 'Enviando…' : enviado() ? 'Solicitud enviada' : 'Enviar enlace' }}
+          </button>
+          <button class="btn-secondary" type="button" [disabled]="enviando()" (click)="volver()">
+            Volver al inicio
+          </button>
+        </form>
 
-      <form (ngSubmit)="enviar()">
-        <label for="correo-recuperacion">Correo electrónico</label>
-
-        <input
-          id="correo-recuperacion"
-          name="email"
-          type="email"
-          [(ngModel)]="email"
-          required
-          autocomplete="email"
-          [disabled]="enviando()"
-          style="
-            box-sizing: border-box;
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-          "
-        >
-
-        <button
-          type="submit"
-          [disabled]="enviando() || enviado()"
-        >
-          {{
-            enviando()
-              ? 'Enviando…'
-              : enviado()
-                ? 'Solicitud enviada'
-                : 'Enviar enlace'
-          }}
-        </button>
-      </form>
-
-      @if (error()) {
-        <p role="alert">{{ error() }}</p>
-      }
-
-      <p role="status">{{ mensaje() }}</p>
-
-      <button
-        type="button"
-        [disabled]="enviando()"
-        (click)="volver()"
-      >
-        Volver al inicio
-      </button>
+        @if (error()) {
+          <p class="alert" role="alert">{{ error() }}</p>
+        }
+        @if (mensaje()) {
+          <p class="notice" role="status">{{ mensaje() }}</p>
+        }
+      </section>
     </main>
   `,
 })
@@ -99,26 +74,19 @@ export class RecuperarClaveComponent {
     this.enviando.set(true);
 
     try {
-      const { error } =
-        await this.supabase.client.auth.resetPasswordForEmail(
-          correo,
-          {
-            redirectTo:
-              `${window.location.origin}/restablecer-clave`,
-          },
-        );
+      const { error } = await this.supabase.client.auth.resetPasswordForEmail(correo, {
+        redirectTo: `${window.location.origin}/restablecer-clave`,
+      });
 
       if (error) {
-        this.error.set(
-          'No se pudo enviar la solicitud. Inténtalo más tarde.',
-        );
+        this.error.set('No se pudo enviar la solicitud. Inténtalo más tarde.');
         return;
       }
 
       this.enviado.set(true);
       this.mensaje.set(
         'Si existe una cuenta asociada a ese correo, recibirás ' +
-        'un enlace para cambiar la contraseña. Revisa también spam.',
+          'un enlace para cambiar la contraseña. Revisa también spam.',
       );
     } catch {
       this.error.set(

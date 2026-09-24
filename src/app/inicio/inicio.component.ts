@@ -11,14 +11,24 @@ import { SupabaseService } from '../core/services/supabase.service';
   styleUrl: './inicio.component.scss',
 })
 export class InicioComponent {
+  readonly mostrarFormulario = signal(false);
+
+  abrirAcceso(registro: boolean) {
+    this.modoRegistro.set(registro);
+    this.mostrarFormulario.set(true);
+    this.error.set('');
+    this.mensaje.set('');
+  }
+
   email = '';
   password = '';
   apodo = '';
-irARecuperarClave() {
-  if (!this.procesando()) {
-    void this.router.navigate(['/recuperar-clave']);
+
+  irARecuperarClave() {
+    if (!this.procesando()) {
+      void this.router.navigate(['/recuperar-clave']);
+    }
   }
-}
   readonly modoRegistro = signal(false);
   readonly procesando = signal(false);
   readonly error = signal('');
@@ -32,7 +42,7 @@ irARecuperarClave() {
   cambiarModo() {
     if (this.procesando()) return;
 
-    this.modoRegistro.update(actual => !actual);
+    this.modoRegistro.update((actual) => !actual);
     this.error.set('');
     this.mensaje.set('');
     this.password = '';
@@ -60,8 +70,7 @@ irARecuperarClave() {
     this.procesando.set(true);
 
     try {
-      const { error } =
-        await this.supabase.iniciarSesionConCorreo(email, password);
+      const { error } = await this.supabase.iniciarSesionConCorreo(email, password);
 
       if (error) {
         this.error.set(error.message);
@@ -71,19 +80,13 @@ irARecuperarClave() {
       this.password = '';
       await this.continuarDespuesDelAcceso();
     } catch {
-      this.error.set(
-        'No pudimos completar el acceso. Revisa tu conexión e inténtalo de nuevo.',
-      );
+      this.error.set('No pudimos completar el acceso. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       this.procesando.set(false);
     }
   }
 
-  async registrar(
-    email: string,
-    password: string,
-    apodo: string,
-  ) {
+  async registrar(email: string, password: string, apodo: string) {
     if (this.procesando()) return;
 
     this.error.set('');
@@ -109,13 +112,12 @@ irARecuperarClave() {
     this.procesando.set(true);
 
     try {
-      const { data, error } =
-        await this.supabase.registrarConCorreo(
-          email,
-          password,
-          nombre,
-          `${window.location.origin}/`,
-        );
+      const { data, error } = await this.supabase.registrarConCorreo(
+        email,
+        password,
+        nombre,
+        `${window.location.origin}/`,
+      );
 
       if (error) {
         this.error.set(error.message);
@@ -130,13 +132,11 @@ irARecuperarClave() {
         this.modoRegistro.set(false);
         this.mensaje.set(
           'Si el registro procede, recibirás un correo para confirmar tu cuenta. ' +
-          'Revisa también spam. Si ya tenías una cuenta, inicia sesión.',
+            'Revisa también spam. Si ya tenías una cuenta, inicia sesión.',
         );
       }
     } catch {
-      this.error.set(
-        'No pudimos confirmar el registro. Revisa tu correo antes de reintentarlo.',
-      );
+      this.error.set('No pudimos confirmar el registro. Revisa tu correo antes de reintentarlo.');
     } finally {
       this.procesando.set(false);
     }
@@ -151,8 +151,7 @@ irARecuperarClave() {
       // Se puede continuar aunque el navegador bloquee el almacenamiento.
     }
 
-    const formatoUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const formatoUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     const navegado =
       invitacion && formatoUuid.test(invitacion)

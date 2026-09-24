@@ -1,0 +1,92 @@
+:host { display: block; }
+
+.quest-world {
+  min-height: 100svh;
+  padding: 24px 24px 30px;
+  background: #448ed7 url('/images/gift-village.png') center bottom / cover no-repeat;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Courier New', monospace;
+}
+.quest-hud {
+  width: min(1200px, 100%);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #fff3bc;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px #172338;
+}
+.quest-content { width: min(560px, 100%); margin: 42px auto auto; text-align: center; }
+.quest-logo {
+  width: fit-content;
+  margin: 0 auto 30px;
+  padding: 20px 36px 26px;
+  background: #131b2b;
+  border: 5px solid #ffca58;
+  outline: 3px solid #2b1720;
+  box-shadow: 7px 8px 0 #6b3c27, inset 0 0 0 4px #8d542d;
+  transform: rotate(-2deg);
+}
+.quest-logo p { color: #ffe9ad; font-size: 10px; letter-spacing: 3px; margin: 0 0 13px; font-weight: 900; }
+.quest-logo h1 {
+  font-size: clamp(42px, 6vw, 70px);
+  color: #ff622d;
+  font-family: 'Courier New', monospace;
+  line-height: .95;
+  font-weight: 1000;
+  letter-spacing: -3px;
+  margin: 0;
+  text-shadow: 0 -2px #ffe58e, 3px 3px #ad250f, 5px 6px #070d17;
+}
+.quest-logo h1 span { color: #ffb338; }
+.quest-logo__ribbon { display: block; color: #fff4c8; font-weight: 900; font-size: 13px; letter-spacing: 4px; margin-top: 18px; }
+.quest-menu { display: grid; gap: 19px; width: min(480px, 100%); margin: 0 auto; }
+.quest-tagline { font-weight: 700; text-shadow: 2px 2px #163356; font-size: 14px; margin: 0 0 5px; }
+.quest-menu button {
+  min-height: 70px;
+  padding: 14px;
+  border: 4px solid #ffc343;
+  border-radius: 3px;
+  color: #fffaf2;
+  background: #17273ded;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(16px, 3vw, 23px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 3px 3px #090c16;
+  box-shadow: 5px 5px 0 #142139;
+}
+.quest-menu button:hover { background: #294563; transform: translateY(-2px); }
+.quest-menu .quest-menu__recovery { min-height: 35px; border: 0; box-shadow: none; background: transparent; text-transform: none; font-size: 13px; }
+.quest-form {
+  text-align: left;
+  padding: 25px;
+  border: 4px solid #ffc343;
+  border-radius: 3px;
+  background: #142238f5;
+  box-shadow: 6px 6px #172236;
+}
+.quest-form h2 { margin: 18px 0; color: #ffe49d; text-align: center; font-size: 18px; }
+.quest-back { background: transparent; box-shadow: none; border: 0; color: #ffe49d; padding: 0; min-height: 30px; }
+.quest-form input { background: #0d182b; border-color: #567190; border-radius: 2px; }
+.quest-form label { color: #f7e3ab; }
+.quest-form button[type='submit'] { background: #ef9a22; color: #162237; border-color: #ffcf62; text-shadow: none; box-shadow: 0 4px #99551c; }
+.quest-footer { text-align: center; margin-top: 80px; color: #fff4cf; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px #13272c; }
+.quest-world--form .quest-content { margin-top: 26px; }
+.quest-world--form .quest-logo { padding: 12px 28px; margin-bottom: 24px; }
+.quest-world--form .quest-logo h1 { font-size: 36px; }
+.quest-world--form .quest-logo p { display: none; }
+.quest-world--form .quest-logo__ribbon { margin-top: 8px; font-size: 10px; }
+@media (max-width: 600px) {
+  .quest-world { padding: 18px 18px 25px; background-position: 60% bottom; }
+  .quest-hud { font-size: 9px; letter-spacing: 1px; }
+  .quest-hud span:last-child { display: none; }
+  .quest-content { margin-top: 55px; }
+  .quest-logo { padding: 20px 24px; }
+  .quest-form { padding: 18px; }
+}
